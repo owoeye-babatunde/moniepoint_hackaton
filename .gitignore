@@ -10,4 +10,3 @@ wheels/
 .venv
 
 .ruff_cache/
-mp-hackathon-sample-data/

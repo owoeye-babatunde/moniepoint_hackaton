@@ -8,7 +8,11 @@ Ensure you have `uv` installed on your system.
     ```sh
     cd /solution/database_reader
     ```
-2. Run the following command:
+2. Run the following command to lock `uv`:
+    ```sh
+    uv lock
+    ```
+3. Run the following command:
     ```sh
     make run
     ```

@@ -39,6 +39,7 @@ class SalesAnalytics:
         return products
 
     def process_line(self, line, filename):
+        """Process each line of the current file"""
         try:
             # Split by comma handling brackets
             parts = []
@@ -135,6 +136,11 @@ class SalesAnalytics:
                     ((date, self.calculate_hourly_average(date))
                      for date in self.daily_avg_transactions.keys()),
                     key=lambda x: x[1]
+                ) if self.daily_avg_transactions else None,
+                'highest_avg_volume_hour': max(
+                    ((hour, sum(self.daily_avg_transactions[date][hour] for date in self.daily_avg_transactions.keys()) / len(self.daily_avg_transactions))
+                     for hour in range(24)),
+                    key=lambda x: x[1]
                 ) if self.daily_avg_transactions else None
             }
             return report
@@ -170,18 +176,23 @@ def analyze_transactions(base_path):
     print("\nSales Analytics Report")
     print("====================")
     if report['highest_daily_volume']:
-        print(f"Highest Sales Volume: {report['highest_daily_volume'][1]} transactions on {report['highest_daily_volume'][0]}")
+        print(f"Highest Sales Volume in a day: {report['highest_daily_volume'][1]} transactions on {report['highest_daily_volume'][0]}")
     if report['highest_daily_value']:
-        print(f"Highest Sales Value: ${report['highest_daily_value'][1]:.2f} on {report['highest_daily_value'][0]}")
+        print(f"Highest Sales Value in a day: ${report['highest_daily_value'][1]:.2f} on {report['highest_daily_value'][0]}")
     if report['most_sold_product']:
-        print(f"Most Sold Product: Product {report['most_sold_product'][0]} with {report['most_sold_product'][1]} units")
+        print(f"Most Sold Product ID for each month: Product {report['most_sold_product'][0]} with {report['most_sold_product'][1]} units")
     if report['monthly_top_staff']:
-        print("\nTop Performing Staff by Month:")
+        print("\nHighest sales staff ID for each month:")
         for month, (staff_id, sales) in sorted(report['monthly_top_staff'].items()):
             print(f"{month}: Staff {staff_id} with {sales} transactions")
     if report['highest_avg_volume_day']:
         print(f"\nHighest Average Transaction Volume: {report['highest_avg_volume_day'][0]} "
               f"with {report['highest_avg_volume_day'][1]:.1f} transactions per hour")
+    if report['Highest hour of the day by average transaction volume']:
+        hour = int(report['highest_avg_volume_hour'][0])
+        hour_str = datetime.strptime(str(hour), "%H").strftime("%I%p").lower()
+        print(f"\nHighest Average Transaction Volume: {hour_str} "
+              f"with {report['highest_avg_volume_hour'][1]:.1f} transactions per hour")
 
 
 if __name__ == "__main__":
