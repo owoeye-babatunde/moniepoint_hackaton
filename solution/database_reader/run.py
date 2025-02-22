@@ -1,6 +1,7 @@
 import os
-from datetime import datetime
 from collections import defaultdict
+from datetime import datetime
+
 
 class SalesAnalytics:
     def __init__(self):
@@ -9,7 +10,7 @@ class SalesAnalytics:
         self.product_volumes = defaultdict(int)
         self.monthly_staff_sales = defaultdict(lambda: defaultdict(int))
         self.daily_avg_transactions = defaultdict(lambda: defaultdict(int))
-    
+
     def parse_timestamp(self, timestamp):
         """Parse timestamp with flexible format handling"""
         try:
@@ -21,8 +22,8 @@ class SalesAnalytics:
                 return datetime.strptime(timestamp, '%Y-%m-%dT%H:%M')
             except ValueError as e:
                 raise ValueError(f"Unable to parse timestamp: {timestamp}") from e
-    
-    
+
+
     def parse_products(self, product_str):
         products = []
         try:
@@ -36,35 +37,35 @@ class SalesAnalytics:
             print(f"Error parsing products string: {product_str}")
             print(f"Error details: {str(e)}")
         return products
-        
+
     def process_line(self, line, filename):
         try:
             # Split by comma handling brackets
             parts = []
             in_brackets = False
             current_part = []
-            
+
             for char in line.strip():
                 if char == '[':
                     in_brackets = True
                 elif char == ']':
                     in_brackets = False
-                
+
                 if char == ',' and not in_brackets:
                     parts.append(''.join(current_part))
                     current_part = []
                 else:
                     current_part.append(char)
-            
+
             if current_part:
                 parts.append(''.join(current_part))
-            
+
             if len(parts) != 4:
                 print(f"Invalid line format in {filename}: {line}")
                 return
-                
+
             staff_id, timestamp, products, amount = parts
-            
+
             try:
                 dt = self.parse_timestamp(timestamp)
                 date_str = dt.strftime('%Y-%m-%d')
@@ -74,27 +75,27 @@ class SalesAnalytics:
                 print(f"Error parsing timestamp in {filename}: {timestamp}")
                 print(f"Error details: {str(e)}")
                 return
-            
+
             try:
                 sale_amount = float(amount)
                 self.daily_sales_value[date_str] += sale_amount
             except ValueError:
                 print(f"Invalid amount format in {filename}: {amount}")
                 return
-            
+
             self.daily_sales_volume[date_str] += 1
-            
+
             for product_id, quantity in self.parse_products(products):
                 self.product_volumes[product_id] += quantity
-            
+
             self.monthly_staff_sales[month_str][staff_id] += 1
             self.daily_avg_transactions[date_str][hour] += 1
-            
+
         except Exception as e:
             print(f"Error processing line in {filename}: {line}")
             print(f"Error details: {str(e)}")
 
-    
+
     def process_file(self, filepath):
         """Process file from the hackaton data path"""
         try:
@@ -109,7 +110,7 @@ class SalesAnalytics:
         except Exception as e:
             print(f"Error reading file {filepath}")
             print(f"Error details: {str(e)}")
-    
+
     def calculate_hourly_average(self, date_str):
         hour_counts = self.daily_avg_transactions[date_str]
         if not hour_counts:
@@ -117,7 +118,7 @@ class SalesAnalytics:
         total_transactions = sum(hour_counts.values())
         active_hours = len(hour_counts)
         return total_transactions / active_hours if active_hours > 0 else 0
-    
+
 
     def generate_report(self):
         try:
@@ -131,7 +132,7 @@ class SalesAnalytics:
                     if staff_sales
                 },
                 'highest_avg_volume_day': max(
-                    ((date, self.calculate_hourly_average(date)) 
+                    ((date, self.calculate_hourly_average(date))
                      for date in self.daily_avg_transactions.keys()),
                     key=lambda x: x[1]
                 ) if self.daily_avg_transactions else None
@@ -144,7 +145,7 @@ class SalesAnalytics:
 
 def analyze_transactions(base_path):
     analyzer = SalesAnalytics()
-    
+
     # Process all test case directories
     for test_dir in sorted(os.listdir(base_path)):
         if test_dir.startswith('test-case-'):
@@ -159,13 +160,13 @@ def analyze_transactions(base_path):
                         print(f"Processing file: {filename}")
                         if os.path.isfile(filepath):
                             analyzer.process_file(filepath)
-    
+
     # Generate and print report
     report = analyzer.generate_report()
     if not report:
         print("\nError: Could not generate report due to processing errors")
         return
-    
+
     print("\nSales Analytics Report")
     print("====================")
     if report['highest_daily_volume']:

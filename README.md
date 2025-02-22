@@ -1,5 +1,14 @@
-# Here is my submission 
+# Submission Instructions
 
-Please ensure you have uv installed
-cd into the database_reader folder in my solution directory
-enter make run
+## Prerequisites
+Ensure you have `uv` installed on your system.
+
+## Steps to Run
+1. Navigate to the `database_reader` folder in the solution directory:
+    ```sh
+    cd /solution/database_reader
+    ```
+2. Run the following command:
+    ```sh
+    make run
+    ```
