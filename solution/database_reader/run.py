@@ -178,7 +178,9 @@ def analyze_transactions(base_path):
         print("\nTop Performing Staff by Month:")
         for month, (staff_id, sales) in sorted(report['monthly_top_staff'].items()):
             print(f"{month}: Staff {staff_id} with {sales} transactions")
-
+    if report['highest_avg_volume_day']:
+        print(f"\nHighest Average Transaction Volume: {report['highest_avg_volume_day'][0]} "
+              f"with {report['highest_avg_volume_day'][1]:.1f} transactions per hour")
 
 
 if __name__ == "__main__":
