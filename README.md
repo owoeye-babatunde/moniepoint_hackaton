@@ -16,3 +16,7 @@ Ensure you have `uv` installed on your system.
     ```sh
     make run
     ```
+4. Or run
+    ```sh
+    python3 run.py
+    ```
