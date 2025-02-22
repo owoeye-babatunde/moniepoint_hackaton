@@ -39,7 +39,7 @@ class SalesAnalytics:
         
     def process_line(self, line, filename):
         try:
-            # Split by comma, handling brackets
+            # Split by comma handling brackets
             parts = []
             in_brackets = False
             current_part = []
@@ -111,12 +111,36 @@ class SalesAnalytics:
             print(f"Error details: {str(e)}")
     
     def calculate_hourly_average(self, date_str):
-         # TODO: Implement hourly average
-        return NotImplementedError("Report generation not implemented yet")
+        hour_counts = self.daily_avg_transactions[date_str]
+        if not hour_counts:
+            return 0
+        total_transactions = sum(hour_counts.values())
+        active_hours = len(hour_counts)
+        return total_transactions / active_hours if active_hours > 0 else 0
+    
 
     def generate_report(self):
-        # TODO: Implement report generation
-        return NotImplementedError("hourly average not implemented yet")
+        try:
+            report = {
+                'highest_daily_volume': max(self.daily_sales_volume.items(), key=lambda x: x[1]) if self.daily_sales_volume else None,
+                'highest_daily_value': max(self.daily_sales_value.items(), key=lambda x: x[1]) if self.daily_sales_value else None,
+                'most_sold_product': max(self.product_volumes.items(), key=lambda x: x[1]) if self.product_volumes else None,
+                'monthly_top_staff': {
+                    month: max(staff_sales.items(), key=lambda x: x[1])
+                    for month, staff_sales in self.monthly_staff_sales.items()
+                    if staff_sales
+                },
+                'highest_avg_volume_day': max(
+                    ((date, self.calculate_hourly_average(date)) 
+                     for date in self.daily_avg_transactions.keys()),
+                    key=lambda x: x[1]
+                ) if self.daily_avg_transactions else None
+            }
+            return report
+        except Exception as e:
+            print("Error generating report")
+            print(f"Error details: {str(e)}")
+            return None
 
 def analyze_transactions(base_path):
     analyzer = SalesAnalytics()
@@ -137,7 +161,25 @@ def analyze_transactions(base_path):
                             analyzer.process_file(filepath)
     
     # Generate and print report
-    report = analyzer.process_file()
+    report = analyzer.generate_report()
+    if not report:
+        print("\nError: Could not generate report due to processing errors")
+        return
+    
+    print("\nSales Analytics Report")
+    print("====================")
+    if report['highest_daily_volume']:
+        print(f"Highest Sales Volume: {report['highest_daily_volume'][1]} transactions on {report['highest_daily_volume'][0]}")
+    if report['highest_daily_value']:
+        print(f"Highest Sales Value: ${report['highest_daily_value'][1]:.2f} on {report['highest_daily_value'][0]}")
+    if report['most_sold_product']:
+        print(f"Most Sold Product: Product {report['most_sold_product'][0]} with {report['most_sold_product'][1]} units")
+    if report['monthly_top_staff']:
+        print("\nTop Performing Staff by Month:")
+        for month, (staff_id, sales) in sorted(report['monthly_top_staff'].items()):
+            print(f"{month}: Staff {staff_id} with {sales} transactions")
+
+
 
 if __name__ == "__main__":
     base_path = "./mp-hackathon-sample-data"
